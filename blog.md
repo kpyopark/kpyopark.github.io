@@ -4,7 +4,7 @@ title: Blog
 permalink: /blog/
 ---
 
-Tell us about your blog. Hopefully it's cool.
+도움이 되는 내용으로 가득 채우겠습니다.
 
 <ul class="listing">
 {% for post in site.posts %}
