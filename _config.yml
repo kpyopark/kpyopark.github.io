@@ -1,0 +1,25 @@
+# Site settings
+title: Beginner Developer's blog
+email: toheavener01@gmail.com
+description: > # this means to ignore newlines until "baseurl:"
+  개발의 중요성을 공유하고, 서로 더 재미있는 세상을 만들기를 희망하는 초보 개발자의 글 모음. 
+  데이터베이스의 구조, 리눅스 시스템의 구조와 같이 기본적인 내용을 공유. 
+  현재 트렌드이거나, 알면 일상생활에 도움이 되는 힌트를 찾고 게시. 
+  일반적인 생활에서 벗어난 여행 잡단 및 먹거리 후기. 
+baseurl: "" # the subpath of your site, e.g. /blog/
+url: "https://kpyopark.github.com" # the base hostname & protocol for your site
+twitter_username: 
+github_username: kpyopark
+
+# Build settings
+markdown: kramdown
+
+# Other options
+permalink: blog/:year/:month/:title
+job.title: "System engineer"
+excerpt_separator: "<!--more-->"
+
+# SEO stuff
+# google_author: ""
+# google_site_verification: ""
+# bing_webmastertools_id: ""
