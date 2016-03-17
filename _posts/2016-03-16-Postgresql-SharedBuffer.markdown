@@ -1,10 +1,11 @@
 ---
 layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
-date: 2016-03-16T16:53:27.000Z
+date: {}
 categories: postgres shared_buffer
 published: true
 ---
+
 
 ## Shared Buffer 접근 제한 방법
 
@@ -25,7 +26,16 @@ published: true
 
 4. Shared Lock(READ Lock)만 설정되어 있는 경우라도, 해당 Buffer에 있는 Tuple의 Commit Status값 변경하는 것은 괜찮습니다. 해당 Bit의 경우, 참조성 성격이 강해서 충돌로 인한 0 값 설정이 된다 하더라도 별 문제가 되지 않으며, Bit 연산이기 때문에, 충돌이 날 확률이 작습니다. 다만, HEAP_XMIN_INVALID, HEAP_XMIN_COMMITTED가 동시에 세팅이 되는 경우에는, WAL Log 상태이기 때문에, 해당 버퍼에 무조건 exclusive lock을 설정해주어야 합니다. 
 
-5. 페이지에 올라와 있는 Tuple을 메모리에서 물리적으로 삭제하거나, 압축을 하기 위해서는, 해당 버퍼에 Pin과 exclusive Lock을 설정하고, 지속적으로 Pin 값이 1인 상태로 있는지 확인해야 합니다. Pin값이 1이란 이야기는 해당 Buffer를 다른 Backend 프로세스가 전혀 사용하지 않는 것이기 때문에, 안정적으로 Tuple에 대한 삭제, 조정을 수행할 수 있습니다. 
+5. 페이지에 올라와 있는 Tuple을 메모리에서 물리적으로 삭제하거나, 압축을 하기 위해서는, 해당 버퍼에 Pin과 exclusive Lock을 설정하고, 지속적으로 Pin 값이 1인 상태로 있는지 확인해야 합니다. Pin값이 1이란 이야기는 해당 Buffer를 다른 Backend 프로세스가 전혀 사용하지 않는 것이기 때문에, 안정적으로 Tuple에 대한 삭제, 조정을 수행할 수 있습니다.
+
+### Contents Lock의 변화
+8.1 버젼 이전에는 shared buffer manager가 단 한개의 시스템 Lock을 가지고 동작하였습니다. 이로 인행서 shared buffer에서 발생하는 lock 경합이 문제가 되었습니다. 
+
+8.1 버젼에서는 여러개의 Lock을 구분하여 생성하였습니다. 먼저, 시스템 전반적인 Lock을 이용하고자 할때 사용하는 BufMappingLock입니다. 말 그대로, Shared Buffer와 해당 Buffer Page를 지칭하는 Handle(또는 tag)와의 Mapping 테이블 자체에 Lock을 설정하는 방법입니다. 현재 메모리에 버퍼가 있는 여부를 검사하기 위해서는 BufMappingLock에 단순하게 Shared Lock을 설정하는 것으로 충분합니다. 하지만, Buffer에 새로운 페이지를 할당하기 위해서는 Exclusive Lock을 설정하여야 합니다.
+
+
+
+
 
 
 
