@@ -3,7 +3,7 @@ layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
 date: 2016-03-17T13:50:00.000Z
 categories: postgres shared_buffer
-published: false
+published: true
 ---
 
 
