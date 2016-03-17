@@ -1,7 +1,7 @@
 ---
 layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
-date: {}
+date: 2016-03-17 13:50:00
 categories: postgres shared_buffer
 published: true
 ---
