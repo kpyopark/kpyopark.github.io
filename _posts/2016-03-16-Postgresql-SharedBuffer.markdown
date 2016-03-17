@@ -1,10 +1,11 @@
 ---
 layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
-date: 2016-03-17 13:50:00
+date: 2016-03-17T13:50:00.000Z
 categories: postgres shared_buffer
 published: true
 ---
+
 
 
 ## Shared Buffer 접근 제한 방법
@@ -62,13 +63,4 @@ spin lock의 일종인 **buffer_strategy_lock**이 추가로 제공됩니다. �
 2. 프리 리스트가 비어 있지 않다면, 제일 앞단의 버퍼를 활용하기 위해서 프리 리스트에서 제거하고, 이를 돌려줍니다. 이후 buffer_stategy_lock을 제거합니다.
 3. 프리 리스트가 존재하지 않을 경우, 재활용 목록에서 다음 재활용 목록을 지정하고, 그 다음 항목으로 시계 바늘(인덱스)을 옮김니다. 이후 buffer_stategy_lock을 제거합니다. 
 4. 만약, 해당 버퍼가 이미 핀 설정 또는 락 설정이 되어 있을 경우, 프리 버퍼로 재활용 할 수 없기 때문에, buffer_stategy_lock을 재설정하고, 3번 항목으로 다시 돌아갑니다. 
-5. 비어 있거나, 또는 재활용 가능한 버퍼를 돌려받은 경우, 해당 버퍼에 핀을 설정합니다. 
-
-
-
-
-
-
-
-
-
+5. 비어 있거나, 또는 재활용 가능한 버퍼를 돌려받은 경우, 해당 버퍼에 핀을 설정합니다.
