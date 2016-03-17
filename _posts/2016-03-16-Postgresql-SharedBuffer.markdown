@@ -3,7 +3,7 @@ layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
 date: {}
 categories: postgres shared_buffer
-published: true
+published: false
 ---
 
 
