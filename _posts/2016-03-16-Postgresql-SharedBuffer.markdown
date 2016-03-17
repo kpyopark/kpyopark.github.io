@@ -3,6 +3,7 @@ layout: post
 title: PostgreSQL에서 Shared_Buffer 접근하기
 date: 2016-03-16T16:53:27.000Z
 categories: postgres shared_buffer
+published: true
 ---
 
 ## Shared Buffer 접근 제한 방법
