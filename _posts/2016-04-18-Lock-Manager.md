@@ -1,5 +1,5 @@
 ---
-published: false
+published: true
 layout: post
 date: "2013-04-17 22:10:00 -0500"
 categories: postgres lock manager
