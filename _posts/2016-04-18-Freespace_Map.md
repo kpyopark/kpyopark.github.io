@@ -1,5 +1,9 @@
 ---
-published: false
+layout: post
+title: 데이터를 저장을 위한 비어있는 공간 찾기. Free space Map
+date: "2013-04-17 22:10:00 -0500"
+categories: postgres FSM free space map
+published: true
 ---
 ## Free Space Map
 
