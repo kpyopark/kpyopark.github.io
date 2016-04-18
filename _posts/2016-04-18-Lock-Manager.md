@@ -1,5 +1,8 @@
 ---
 published: false
+layout: post
+date: "2013-04-17 22:10:00 -0500"
+categories: postgres lock manager
 ---
 ### Lock의 종류
 
@@ -14,9 +17,3 @@ SIReadLock -
 * spinlock 또는 Lightweight Lock을 획득하려고 할 경우에 이미 잠근 Lock이 있는 경우에는, Query수행이 중단되고, die() 인터럽트가 발생합니다. Regular Lock의 경우 이와 같은 제약조건이 없습니다.
 
 ### Regular Lock의 조건
-
-
-
-
-
-
