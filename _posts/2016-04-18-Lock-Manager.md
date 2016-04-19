@@ -16,4 +16,98 @@ SIReadLock -
 
 * spinlock 또는 Lightweight Lock을 획득하려고 할 경우에 이미 잠근 Lock이 있는 경우에는, Query수행이 중단되고, die() 인터럽트가 발생합니다. Regular Lock의 경우 이와 같은 제약조건이 없습니다.
 
-### Regular Lock의 조건
+### Lock의 자료 구조
+
+### Lock 종류에 따른 속성
+#### LOCK Object
+
+tag - 
+	key field. lock hashtable에서 사용되는 Key 값. 
+
+grantMask -
+	현재 해당 Lock Object에 설정되어 있는 Lock Type이 어떤 것인지 표시해줌.
+    
+waitMask -
+	대기상태에 있는 Lock의 종류를 보여줌
+
+procLocks -
+	Lock object에 할당된 모든 PROCLOCK을 소유하고 있는 공유 메모리 상의 Queue 목록
+    
+waitProcs -
+	다른 Backed Process가 끝날때까지 대기하고 있는 Backend를 표시하는 PGPROC 객체 전체를 포함하는 공유 메모리 상의 Queue 목록
+    
+nRequested -
+	해당하는 Lock Object가 몇 번의 Lock 요청을 받았는지 표시. 동일 프로세스에서 여러번 호출하는 경우에도 카운팅을 수행
+    
+requested -
+	Lock 종류에 따라 시도한 횟수를 저장
+    
+nGranted -
+	성공적으로 Lock을 획득한 횟수를 저장
+
+granted -
+	종류별로 현재 설정되어 있는 Lock의 갯수를 저장
+
+위 내용을 보면, 
+0 <= nGranted <= nRequested 관계가 성립됩니다. 추가적으로 
+0 <= granted[i] <= requested[i] 또한 성립됩니다. 
+
+만약, 모든 값이 0이 되는 경우 해당 Lock Object는 해제될 수 있습니다.
+
+#### PROCLock Object
+
+tag - 
+	key field. PROCLock hashtable 에서 Key 역할을 합니다. 
+    tag.myLock - PROCLock에 연결되어 있는 Lock 오브젝트의 포인터를 가지고 있습니다. 
+    tag.myProc - PROCLock을 현재 가지고 있는 backend process의 PROC 포인터를 가지고 있습니다. 
+
+holdMask - 
+	PROCLOCK을 통해서 성공적으로 Lock을 획득한 Mode를 가지고 있음.
+    LOCK object의 grantMask의 서브세이어야 하며, PGPROC 오브젝트가 가지고 있는 heldLocks의 서브셋이어야 함
+
+releaseMask -
+	LockReleaseAll 시에 해제되는 대상 Lock Mode를 표시합니다. 
+    holdMask의 서브셋이어야 합니다. 
+
+lockLink - 
+	동일한 Lock에 대하여 PROCLOCK 오브젝트 Queue를 표시하는 포인터
+
+procLink - 
+	동일 Backend 프로세스에서 소유한 PROCLOCK에 대한 Queue를 표시하는 포인터
+
+### Lock Manager의 내부 Locking
+
+8.2 버젼 이전에서는 LockMgrLock이라는 단일 Lock을 이용하여 모든 잠금을 수행하였습니다.
+이는 당연히 경합을 발생시켰고, 이를 수정하기 위해, 파티션이라는 개념을 도입하였습니다. 즉 특정 락이 관리하는 부분을 한정했다는 이야기 입니다. 하지만, 이로 인하여, 여러 파티션을 동시에 수정하는 경우도 발생했기 때문에, 내부적으로 락 객체들간의 동기화가 추가적으로 구현되어야 했습니다. 정리하면 아래와 같습니다.
+
+* 특정 파티션에는 하나의 Lock이 할당됩니다. 할당되는 락은 LOCKTAG 값에 의해 Hastable에서 관리됩니다. 
+
+* LOCKS, PROCLOCKS는 서로 다른 파티션에, 서로 다른 Hash 전략을 이용하여, 충돌없이 활용할 수 있습니다. 
+  (이 부분은 dynahash.c 에 있는 "partitioned table"을 참고하시면 됩니다. - 확인해 볼 것)
+  PROCLOCK의 경우 LOCK에서 추출한 Hash값의 low-bit가 동일할 경우에는 사용할 수 있게 됩니다. (proclock_hash 참고)
+
+* 8.2이전의 경우, PGPROC은 한개의 PROCLOCKS 리스트만을 가지고 있었으나, 지금은 파티션으로 분리되어 있는 PROCLOCKS 리스트의 목록을 가지게 되었습니다. 이로 인하여, 특정 PROCLOCK에 접근하기 위해서는 먼저 LWLock(아마, PROCLOCKS 리스트 전체 목록에 대한 관리)을 획득하여야 합니다.
+
+* 파티션에 대한 Lock을 획득하기 위해서는 데드록방지를 위하여, 파티션 넘버 순서에 따라 락을 획득하여야 합니다. 
+
+* 백엔드 프로세스가 내부적으로 가지고 있는 LOCALLOCK 해쉬테이블의 경우, 파티션 처리를 하지 않고 있습니다. 
+
+### Fask Path Locking
+
+자주 사용되지만 충돌발생이 잘 안되는 특수한 경우 적용하기 위한 특별한 알고리즘
+
+(1) 약한 테이블 락 : INSERT, UPDATE, DELETE, SELECT에서 사용하는 모든 테이블과 시스템 카탈로그에 대해서는 락을 획득해야 함. 대부분의 DML 수행시에는 동시에 처리할 수 있음. 하지만 DML의 경우(예. CLUSTER, ALTER TABLE, DROP 등등) 또는 LOCK TABLE과 같은 경우에는 DML을 위해서 획득한 Weak 락(AccessShareLock, RowShareLock, RowExclusiveLock)과 충돌이 발생함
+
+(2) VXID 락 : 트랜잭션은 모두 자신만의 가상 트랜잭션 아이디에 대한 락을 가지고 있습니다. 
+
+
+
+
+
+
+
+
+
+
+
+
