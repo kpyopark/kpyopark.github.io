@@ -98,7 +98,13 @@ procLink -
 
 (1) 약한 테이블 락 : INSERT, UPDATE, DELETE, SELECT에서 사용하는 모든 테이블과 시스템 카탈로그에 대해서는 락을 획득해야 함. 대부분의 DML 수행시에는 동시에 처리할 수 있음. 하지만 DML의 경우(예. CLUSTER, ALTER TABLE, DROP 등등) 또는 LOCK TABLE과 같은 경우에는 DML을 위해서 획득한 Weak 락(AccessShareLock, RowShareLock, RowExclusiveLock)과 충돌이 발생함
 
-(2) VXID 락 : 트랜잭션은 모두 자신만의 가상 트랜잭션 아이디에 대한 락을 가지고 있습니다. 
+(2) VXID 락 : 트랜잭션은 모두 자신만의 가상 트랜잭션 아이디에 대한 락을 가지고 있습니다. CREATE INDEX CONCURRENTLY 수행 중인 경우 또는 HOT STANDBY상태인 경우에 충돌이 발생합니다. 
+
+락 충돌을 방지하기 위하여, 파티션 개념을 도입했지만, 짧은 쿼리가 매우 빈번하게 동일 테이블에 접근하는 경우에는 해당 테이블에 속한 파티션 락이 병목이 될 수 밖에 없습니다. 이런 현상은 2 코어 서버에서 조차, 매우 악명이 높았습니다. 
+
+이를 완화하기 위하여, 9.2 버젼 이상에서는, 백엔드 프로세스 자체적인 PGPROC 구조 안에서 공유되지 않는 테이블에 대한 자체적인 락을 소유할 수 있게 지원하고 있습니다.
+
+구현방법은 1024개의 정수 카운트 배열을 준비한 후, 1024개로 분할된 LOCK 공간에 맵핑하는 방법입니다. 이후, 각 파티션에 해당하는 비공유 테이블에 강한 락(ShareLock, ShareRowExclusiveLock, ExclusiveLock, and AccessExclusiveLock)이 발생하는 경우 카운트를 올려줍니다. 따라서 개별 카운트의 값이 0인지 아닌지를 확인하는 것으로 비공유 테이블에 락이 걸려있는지 없는지 여부를 확인할 수 있습니다. 
 
 
 
