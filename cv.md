@@ -4,8 +4,7 @@ title: CV
 permalink: /cv/
 ---
 
-I embed a current version of my CV below. You can also [download the PDF here](https://www.dropbox.com/s/30ah9tgxevj1vl9/svm-cv.pdf).
+# cv
 
-{% include embedpdf.html code="30ah9tgxevj1vl9/svm-cv.pdf" width=100 height=800 %}
-
+I wrote my profile link [here](https://www.linkedin.com/in/%EA%B2%BD%ED%91%9C-%EB%B0%95-0b726699/).
 

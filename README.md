@@ -1,5 +1,4 @@
-Steve's No-Good-Very-Bad Jekyll Theme
-=====================================
+# Steve's No-Good-Very-Bad Jekyll Theme
 
 This is my custom Jekyll theme, which is basically [Joel Glovier](http://joelglovier.com/)'s `jekyll-new` theme smashed with [Alex King](http://www.alexking.org)'s [Favepersonal](https://crowdfavorite.com/favepersonal/) theme for Wordpress. I used Favepersonal for my Wordpress site before abandoning it. You can see my site at [svmiller.github.io](http://svmiller.github.io).
 
@@ -12,3 +11,4 @@ Mobile support is clearly functional, though some white-spacing could be improve
 `css` and `_sass` directories also functional, if a bit cluttered. Do observe new colors I created for `$clemson-orange` and `$clemson-purple` in `css/main.scss`.
 
 Feel free to contact me at svmille@clemson.edu. Send along some cheers too if you find it useful.
+
